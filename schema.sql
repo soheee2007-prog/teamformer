@@ -1,4 +1,4 @@
--- 생성: 2026-10-29 23:25 KST
+-- 생성: 2026-10-29 23:27 KST
 -- 팀 편성 앱의 테이블. 이름은 모두 tf_ 로 시작한다(공고 4.2절, 5장).
 
 create table if not exists tf_students (

@@ -1,4 +1,4 @@
-# 생성: 2026-10-29 23:25 KST
+# 생성: 2026-10-29 23:27 KST
 # 실제 Supabase에 tf_ 테이블과 제약이 있는지 확인한다.
 from db import get_pool
 

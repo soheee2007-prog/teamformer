@@ -1,4 +1,4 @@
-# 생성: 2026-10-29 23:25 KST
+# 생성: 2026-10-29 23:27 KST
 # DB 연결 풀을 한 번만 만들어 다시 쓴다(공고 4.2절).
 import streamlit as st
 from psycopg_pool import ConnectionPool

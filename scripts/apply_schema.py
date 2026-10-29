@@ -1,4 +1,4 @@
-# 생성: 2026-10-29 23:25 KST
+# 생성: 2026-10-29 23:27 KST
 # schema.sql 을 Supabase에 실행한다. 실행: python scripts/apply_schema.py
 import sys
 from pathlib import Path

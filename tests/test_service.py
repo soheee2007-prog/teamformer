@@ -1,4 +1,4 @@
-# 생성: 2026-10-29 23:25 KST
+# 생성: 2026-10-29 23:30 KST
 # service.py 시험. 실제 Supabase를 쓰므로 앱 데이터가 초기화된다.
 from pathlib import Path
 

@@ -1,4 +1,4 @@
-# 생성: 2026-10-29 23:25 KST
+# 생성: 2026-10-29 23:30 KST
 # 명단 CSV 해석 시험(공고 2.6절).
 from pathlib import Path
 

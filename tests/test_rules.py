@@ -1,4 +1,4 @@
-# 생성: 2026-10-29 23:25 KST
+# 생성: 2026-10-29 23:28 KST
 # rules.py 의 팀 규칙 시험. 공고 2.3절, 3장의 예를 그대로 쓴다.
 from rules import Student, apply_block_reason, filled_required, team_errors
 

@@ -1,4 +1,4 @@
-# 생성: 2026-10-29 23:25 KST
+# 생성: 2026-10-29 23:36 KST
 # ai.assign 을 실제 모델로 한 번 실행해 본다(무료 한도 1~3회 사용). DB는 쓰지 않는다.
 # 상황: 공고 부록 2 중간 시나리오의 마감 직후. 실행: python scripts/try_ai_assign.py
 import sys
