@@ -74,3 +74,16 @@ def test_container_keys_in_source():
     for key in ["whoami", "result", "unassigned", "assign_status"]:
         assert re.search(rf'st\.container\(key="{key}"\)', src), key
     assert 'key=f"team_{' in src
+
+
+def test_admin_buttons_run_without_error():
+    # 관리자 단추를 실제로 누른다(배포 앱에서 admin_start 가 NameError 를 냈던 버그를 막음)
+    service.load_roster("admin", parse_roster((DATA / "쉬움.csv").read_bytes()), 3)
+    at = log_in(start(), "admin", get_secret("ADMIN_PASSWORD"))
+    for key in ["admin_start", "admin_close", "admin_confirm"]:
+        at.button(key=key).click()
+        at = at.run()
+        assert not at.exception, f"{key}: {at.exception}"
+    # 파일 없이 처음 상태 만들기 -> 막힘, 마감 -> 승인, 배정안 없이 확정 -> 막힘
+    joined = " ".join(texts(at))
+    assert "막힘: 확정할 배정안이 없음" in joined

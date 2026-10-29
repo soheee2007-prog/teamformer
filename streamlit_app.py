@@ -1,6 +1,7 @@
 # 생성: 2026-10-29 23:39 KST
 # 팀 편성 앱 화면. 화면 요소의 key는 공고 2.7절 표와 똑같이 쓴다(자동 채점 프로그램이 key로 찾음).
 import streamlit as st
+from streamlit.errors import StreamlitAPIException
 
 import ai
 import service
@@ -20,6 +21,14 @@ def _prepare_admin() -> bool:
 
 def _say(msg: str) -> None:
     st.session_state.msg = msg
+
+
+def _refresh() -> None:
+    # 단추를 누른 뒤 조각만 다시 그린다. 화면 전체를 그리는 중이면 조각만 다시 그릴 수 없어 전체를 다시 그린다
+    try:
+        st.rerun(scope="fragment")
+    except StreamlitAPIException:
+        st.rerun()
 
 
 def _show_result() -> None:
@@ -64,7 +73,7 @@ def render_teams(state, user=None, my_team=None, can_apply=False) -> None:
                 if user is not None:
                     if st.button("이 팀에 지원", key=f"apply_{n}", disabled=not can_apply):
                         _say(service.apply(user.student_no, n))
-                        st.rerun(scope="fragment")
+                        _refresh()
 
 
 def student_view(user, state) -> None:
@@ -95,10 +104,10 @@ def student_view(user, state) -> None:
         c1, c2 = st.columns(2)
         if c1.button("찬성", key=f"vote_yes_{a.student_no}"):
             _say(service.vote(user.student_no, a.student_no, True))
-            st.rerun(scope="fragment")
+            _refresh()
         if c2.button("거부", key=f"vote_no_{a.student_no}"):
             _say(service.vote(user.student_no, a.student_no, False))
-            st.rerun(scope="fragment")
+            _refresh()
 
 
 def run_assign(state, status_box) -> None:
@@ -125,7 +134,7 @@ def run_assign(state, status_box) -> None:
     _say(f"승인: 배정안을 만듦({result.source})")
 
 
-def admin_view(state) -> None:
+def admin_view(user, state) -> None:
     st.subheader("1. 명단 올리기")
     file = st.file_uploader("명단 CSV", type="csv", key="admin_roster_file")
     count = st.number_input("팀 수", min_value=1, max_value=20, step=1, value=3, key="admin_team_count")
@@ -139,13 +148,13 @@ def admin_view(state) -> None:
                 st.session_state.assign_log = []
             except RosterError as e:
                 _say(f"막힘: {e}")
-        st.rerun(scope="fragment")
+        _refresh()
 
     st.subheader("2. 모집 마감")
     st.caption("마감됨" if state.closed else "모집 중")
     if st.button("모집 마감", key="admin_close"):
         _say(service.close(user.student_no))
-        st.rerun(scope="fragment")
+        _refresh()
     with st.container(key="unassigned"):
         st.markdown("**팀이 없는 학생**")
         for s in state.unassigned:
@@ -161,7 +170,7 @@ def admin_view(state) -> None:
             st.markdown(line)
     if clicked:
         run_assign(state, status_box)
-        st.rerun(scope="fragment")
+        _refresh()
 
     plan = st.session_state.get("plan")
     if plan and plan["assignment"]:
@@ -182,7 +191,7 @@ def admin_view(state) -> None:
             if msg.startswith("승인"):
                 st.session_state.plan = None
                 st.session_state.assign_log = []
-        st.rerun(scope="fragment")
+        _refresh()
 
     st.subheader("팀 목록")
     render_teams(state)
@@ -204,7 +213,7 @@ def main_view() -> None:
             st.rerun()
     _show_result()
     if user.is_admin:
-        admin_view(state)
+        admin_view(user, state)
     else:
         student_view(user, state)
 
