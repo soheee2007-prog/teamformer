@@ -75,7 +75,7 @@ def _post(model: str, prompt: str, limit_sec: float):
         json={
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 4000,
+            "max_tokens": 16000,  # 생각에 토큰을 많이 써도 답을 낼 여유를 둠
             "reasoning": {"effort": "low"},  # 추론 모델이 빈 응답을 내지 않도록(공고 4.3절)
         },
         timeout=(10, limit_sec),

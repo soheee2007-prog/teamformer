@@ -94,3 +94,24 @@ def test_unexpected_error_moves_to_next_model():
     result = assign(TEAMS, UNASSIGNED, lambda s: None, lambda *a: None, caller=fake)
     assert result.source == f"3차 모델({ai.MODELS[2]})"
     assert "ValueError" in result.attempts[0]
+
+
+def test_request_has_room_to_think(monkeypatch):
+    # 추론 모델이 생각하는 데 토큰을 다 써서 빈 응답을 내지 않도록 max_tokens 를 넉넉히 준다(공고 4.3절)
+    sent = {}
+
+    class Resp:
+        status_code = 200
+
+        def json(self):
+            return {"choices": [{"message": {"content": GOOD}}]}
+
+    def fake_post(url, headers=None, json=None, timeout=None):
+        sent.update(json)
+        return Resp()
+
+    monkeypatch.setattr(ai.requests, "post", fake_post)
+    monkeypatch.setattr(ai, "get_secret", lambda name: "가짜키")
+    call_model("가짜/모델", "질문", limit_sec=5)
+    assert sent["max_tokens"] >= 16000
+    assert sent["reasoning"] == {"effort": "low"}
