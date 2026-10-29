@@ -1,0 +1,20 @@
+시험 시각: 2026-10-29 23:08 KST
+(scripts/test_models.py 실행 결과를 그대로 옮긴 기록. README 5항 근거)
+검사 함수 확인(배정 전에는 팀2에 웹 프로그래머가 없어야 정상): ['팀2 기획자와 웹 프로그래머를 서로 다른 학생으로 채우지 못함']
+
+[실패] google/gemma-4-31b-it:free (1.2초)
+  HTTP 429
+
+[실패] google/gemma-4-26b-a4b-it:free (1.0초)
+  HTTP 429
+
+[통과] nvidia/nemotron-3.5-super-vl:free (24.3초)
+  [{"student": "S7", "team": "팀2"}, {"student": "S8", "team": "팀3"}, {"student": "S9", "team": "팀1"}]
+
+[실패] dots-studio/dots-3-note-preview:free (48.0초)
+  빈 응답
+
+[실패] nvidia/nemotron-3-ultra-550b-a55b:free (120.0초)
+  120초 넘게 응답 없음
+
+[exited with code 0]

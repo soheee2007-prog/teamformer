@@ -1,0 +1,11 @@
+# 생성: 2026-10-29 22:53 KST
+# 비밀 값 (깃허브에 절대 올리지 않음)
+.env
+.env.*
+.streamlit/secrets.toml
+
+# 파이썬
+__pycache__/
+*.pyc
+.venv/
+venv/
