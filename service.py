@@ -10,6 +10,7 @@ from db import get_pool
 from rules import Student, apply_block_reason, check_assignment
 
 STUDENT_PASSWORD = b"1234"
+ADMIN_ONLY = "막힘: 관리자만 할 수 있음"
 
 
 @dataclass
@@ -67,8 +68,16 @@ def login(student_no: str, password: str) -> User | None:
     return User(row[0], row[1], row[2], row[3])
 
 
-def load_roster(students: list[Student], team_count: int) -> str:
-    """관리자 계정만 남기고 모두 지운 뒤 명단과 빈 팀을 만든다(공고 2.6절)."""
+def _is_admin(conn, student_no: str) -> bool:
+    row = conn.execute("select is_admin from tf_students where student_no = %s", (student_no,)).fetchone()
+    return bool(row and row[0])
+
+
+def load_roster(by: str, students: list[Student], team_count: int) -> str:
+    """관리자 계정만 남기고 모두 지운 뒤 명단과 빈 팀을 만든다(공고 2.6절). by: 실행한 사람의 학번."""
+    with get_pool().connection() as conn:
+        if not _is_admin(conn, by):
+            return ADMIN_ONLY
     hashes = [_hash(STUDENT_PASSWORD) for _ in students]
     with get_pool().connection() as conn, conn.transaction():
         conn.execute("delete from tf_applications")
@@ -257,9 +266,11 @@ def _decide(conn, app_id: int, status: str, reason: str) -> None:
     )
 
 
-def close() -> str:
+def close(by: str) -> str:
     """모집 마감: 대기 지원을 거절하고, 혼자인 팀의 학생을 팀에서 뺀다(PRD 4.4절)."""
     with get_pool().connection() as conn, conn.transaction():
+        if not _is_admin(conn, by):
+            return ADMIN_ONLY
         if _closed(conn):
             return "막힘: 이미 마감함"
         conn.execute("insert into tf_settings (key, value) values ('closed', 'true')")
@@ -273,11 +284,13 @@ def close() -> str:
     return f"승인: 모집을 마감함(대기 지원 {rejected}건 거절, 혼자인 학생 {removed}명 팀에서 빠짐)"
 
 
-def confirm(assignment: list[tuple[str, int]]) -> str:
+def confirm(by: str, assignment: list[tuple[str, int]]) -> str:
     """배정안을 지금 DB 상태로 다시 검사한 뒤 저장한다(PRD 4.7절)."""
     try:
         with get_pool().connection() as conn, conn.transaction():
-            conn.execute("select id from tf_teams for update")
+            if not _is_admin(conn, by):
+                return ADMIN_ONLY
+            conn.execute("select id from tf_teams order by id for update")
             if not _closed(conn):
                 return "막힘: 모집을 마감하지 않음"
             state = _read_state(conn, None)

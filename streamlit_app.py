@@ -134,7 +134,7 @@ def admin_view(state) -> None:
             _say("막힘: 명단 파일을 올려 주세요")
         else:
             try:
-                _say(service.load_roster(parse_roster(file.getvalue()), int(count)))
+                _say(service.load_roster(user.student_no, parse_roster(file.getvalue()), int(count)))
                 st.session_state.plan = None
                 st.session_state.assign_log = []
             except RosterError as e:
@@ -144,7 +144,7 @@ def admin_view(state) -> None:
     st.subheader("2. 모집 마감")
     st.caption("마감됨" if state.closed else "모집 중")
     if st.button("모집 마감", key="admin_close"):
-        _say(service.close())
+        _say(service.close(user.student_no))
         st.rerun(scope="fragment")
     with st.container(key="unassigned"):
         st.markdown("**팀이 없는 학생**")
@@ -177,7 +177,7 @@ def admin_view(state) -> None:
         if plan is None:
             _say("막힘: 확정할 배정안이 없음")
         else:
-            msg = service.confirm(plan["assignment"])
+            msg = service.confirm(user.student_no, plan["assignment"])
             _say(msg)
             if msg.startswith("승인"):
                 st.session_state.plan = None

@@ -122,7 +122,9 @@ def assign(
             errors = check_assignment(teams, unassigned, plan)
             if errors:
                 raise AIError("검사 실패: " + "; ".join(errors[:3]))
-        except AIError as e:
+        except Exception as e:  # 예상 못 한 오류도 실패로 보고 다음 모델로 넘어간다(PRD 4.5절 4항)
+            if not isinstance(e, AIError):
+                e = AIError(f"예상 못 한 오류 {type(e).__name__}")
             sec = time.time() - start
             attempts.append(f"{n}차 실패: {e} ({sec:.1f}초)")
             log(model, "실패", str(e), sec)

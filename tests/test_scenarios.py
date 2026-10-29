@@ -12,7 +12,7 @@ DATA = Path(__file__).parent / "data"
 
 
 def run(csv_name: str, team_count: int, steps: list[tuple]):
-    service.load_roster(parse_roster((DATA / csv_name).read_bytes()), team_count)
+    service.load_roster("admin", parse_roster((DATA / csv_name).read_bytes()), team_count)
     for i, step in enumerate(steps, start=1):
         kind, *args, expected = step
         if kind == "apply":
@@ -20,7 +20,7 @@ def run(csv_name: str, team_count: int, steps: list[tuple]):
         elif kind == "vote":
             msg = service.vote(args[0], args[1], args[2])
         elif kind == "close":
-            msg = service.close()
+            msg = service.close("admin")
         else:
             raise ValueError(kind)
         assert msg.split(":")[0] == expected, f"{i}번째 동작 {step} -> {msg}"
@@ -30,7 +30,7 @@ def assign_and_confirm():
     state = service.get_state()
     plan = solve(state.teams, state.unassigned)
     assert plan is not None
-    assert service.confirm(plan).startswith("승인")
+    assert service.confirm("admin", plan).startswith("승인")
     state = service.get_state()
     assert state.unassigned == []
     for n, members in state.teams.items():

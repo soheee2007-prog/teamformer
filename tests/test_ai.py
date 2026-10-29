@@ -79,3 +79,18 @@ def test_call_model_total_timeout(monkeypatch):
     with pytest.raises(AIError, match="1초"):
         call_model("가짜/모델", "질문", limit_sec=1)
     assert time.time() - start < 2.5
+
+
+def test_unexpected_error_moves_to_next_model():
+    # AIError 가 아닌 예외(예: 응답이 JSON이 아님, 키 없음)도 실패로 보고 다음 모델로 넘어간다
+    answers = iter([ValueError("JSON이 아닌 200 응답"), RuntimeError("비밀 값 없음"), GOOD])
+
+    def fake(model, prompt):
+        a = next(answers)
+        if isinstance(a, Exception):
+            raise a
+        return a
+
+    result = assign(TEAMS, UNASSIGNED, lambda s: None, lambda *a: None, caller=fake)
+    assert result.source == f"3차 모델({ai.MODELS[2]})"
+    assert "ValueError" in result.attempts[0]

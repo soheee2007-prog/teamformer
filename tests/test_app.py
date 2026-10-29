@@ -48,7 +48,7 @@ def test_admin_view_keys():
 
 
 def test_student_view_keys():
-    service.load_roster(parse_roster((DATA / "쉬움.csv").read_bytes()), 3)
+    service.load_roster("admin", parse_roster((DATA / "쉬움.csv").read_bytes()), 3)
     at = log_in(start(), "2026101", "1234")
     assert {"apply_1", "apply_2", "apply_3"} <= keys(at)
     at.button(key="apply_1").click()
@@ -57,7 +57,7 @@ def test_student_view_keys():
 
 
 def test_student_has_no_admin():
-    service.load_roster(parse_roster((DATA / "쉬움.csv").read_bytes()), 3)
+    service.load_roster("admin", parse_roster((DATA / "쉬움.csv").read_bytes()), 3)
     at = log_in(start(), "2026101", "1234")
     assert "admin_start" not in keys(at)
 
