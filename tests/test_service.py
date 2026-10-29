@@ -57,3 +57,59 @@ def test_student_password_hashed():
 def test_login_strips_spaces():
     service.load_roster(easy(), 3)
     assert service.login(" 2026101 ", "1234") is not None
+
+
+# ---- 과제 6: 지원, 투표, 마감, 확정 ----
+from rules import solve  # noqa: E402
+
+
+def test_new_member_must_vote():
+    service.load_roster(easy(), 3)
+    assert service.apply("2026101", 1).startswith("승인")
+    assert service.apply("2026104", 1).startswith("대기")
+    assert service.apply("2026108", 1).startswith("대기")
+    assert service.vote("2026101", "2026108", True).startswith("승인")
+    # 2026108 이 새 팀원이 되었으므로 2026104 의 지원에도 투표해야 한다
+    assert service.vote("2026101", "2026104", True).startswith("대기")
+    assert service.vote("2026108", "2026104", True).startswith("승인")
+
+
+def test_vote_twice_blocked():
+    service.load_roster(easy(), 3)
+    service.apply("2026101", 1)
+    service.apply("2026108", 1)
+    service.vote("2026101", "2026108", True)
+    service.apply("2026104", 1)
+    assert service.vote("2026101", "2026104", True).startswith("대기")
+    assert service.vote("2026101", "2026104", True) == "막힘: 이미 투표함"
+
+
+def test_non_member_cannot_vote():
+    service.load_roster(easy(), 3)
+    service.apply("2026101", 1)
+    service.apply("2026104", 1)
+    assert service.vote("2026102", "2026104", True) == "막힘: 이 지원에 투표할 수 없음"
+
+
+def test_apply_after_close():
+    service.load_roster(easy(), 3)
+    assert service.close().startswith("승인")
+    assert service.apply("2026101", 1) == "막힘: 모집이 마감됨"
+
+
+def test_close_twice():
+    service.load_roster(easy(), 3)
+    service.close()
+    assert service.close() == "막힘: 이미 마감함"
+
+
+def test_confirm_rechecks():
+    service.load_roster(easy(), 3)
+    for no, team in [("2026101", 1), ("2026102", 2), ("2026103", 3)]:
+        service.apply(no, team)
+    service.close()
+    state = service.get_state()
+    plan = solve(state.teams, state.unassigned)
+    service.load_roster(easy(), 3)
+    assert service.confirm(plan).startswith("막힘")
+    assert all(ms == [] for ms in service.get_state().teams.values())
